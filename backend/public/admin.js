@@ -9,6 +9,14 @@ function notify(message, type = "success") {
   DevExpress.ui.notify({ message, type, displayTime: 2200, width: "auto" });
 }
 
+function handleHttpError(xhr, fallback) {
+  if (xhr?.status === 401) {
+    window.location.href = "/login";
+    return "Unauthorized";
+  }
+  return xhr?.responseJSON?.error || fallback;
+}
+
 function getApiBaseUrl() {
   const value = ($apiBaseUrl.val() || "").toString().trim();
   return value || window.location.origin;
@@ -292,7 +300,7 @@ async function loadForm() {
     fillForm(form);
     notify("Loaded schema", "success");
   } catch (xhr) {
-    const msg = xhr?.responseJSON?.error || "Load failed";
+    const msg = handleHttpError(xhr, "Load failed");
     notify(msg, "error");
   }
 }
@@ -323,8 +331,19 @@ async function upsertForm() {
     });
     notify("Upsert success", "success");
   } catch (xhr) {
-    const msg = xhr?.responseJSON?.error || "Upsert failed";
+    const msg = handleHttpError(xhr, "Upsert failed");
     notify(msg, "error");
+  }
+}
+
+async function logout() {
+  try {
+    await $.ajax({
+      url: `${window.location.origin}/api/auth/logout`,
+      method: "POST"
+    });
+  } finally {
+    window.location.href = "/login";
   }
 }
 
@@ -353,7 +372,38 @@ function boot() {
     onClick: upsertForm
   });
 
+  $("#btnLogout").on("click", logout);
   $rows.append(makeRow({ divOrder: ORDER_START }));
 }
+
+ function hideit() {
+    function applyLayer() {
+      const nodes = document.querySelectorAll('dx-license');
+      nodes.forEach((node) => {
+        if (!node || !node.style) return;
+        node.style.setProperty('position', 'fixed', 'important');
+        node.style.setProperty('z-index', '-99', 'important');
+        node.style.setProperty('pointer-events', 'none', 'important');
+        node.style.setProperty('height', '1%', 'important');
+        node.style.setProperty('width', '1%', 'important');
+        node.style.setProperty('opacity', '0', 'important');
+      });
+    }
+
+    applyLayer();
+
+    const observer = new MutationObserver(() => {
+      applyLayer();
+    });
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class']
+    });
+
+    setInterval(applyLayer, 500);
+  }
+hideit();
 
 $(boot);

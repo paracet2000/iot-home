@@ -4,36 +4,8 @@ const DEVICE_ID = "esp8266-lab-01";
 
 const $root = $("#dxform");
 const $headerTitle = $(".header h1");
-
- function enforceDxLicenseLayer() {
-    function applyLayer() {
-      const nodes = document.querySelectorAll('dx-license');
-      nodes.forEach((node) => {
-        if (!node || !node.style) return;
-        node.style.setProperty('position', 'fixed', 'important');
-        node.style.setProperty('z-index', '-99', 'important');
-        node.style.setProperty('pointer-events', 'none', 'important');
-        node.style.setProperty('height', '1%', 'important');
-        node.style.setProperty('width', '1%', 'important');
-        node.style.setProperty('opacity', '0', 'important');
-      });
-    }
-
-    applyLayer();
-
-    const observer = new MutationObserver(() => {
-      applyLayer();
-    });
-    observer.observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['style', 'class']
-    });
-
-    setInterval(applyLayer, 500);
-  }
-enforceDxLicenseLayer();
+const $linkAdmin = $("#linkAdmin");
+const $linkUsers = $("#linkUsers");
 
 function fetchJson(path, options = {}) {
   const method = options.method || "GET";
@@ -46,6 +18,10 @@ function fetchJson(path, options = {}) {
     dataType: "json",
     data: data ? JSON.stringify(data) : undefined
   }).catch((xhr) => {
+    if (xhr?.status === 401) {
+      window.location.href = "/login";
+      throw new Error("Unauthorized");
+    }
     const msg = xhr?.responseJSON?.error || `HTTP ${xhr?.status || 0}`;
     throw new Error(msg);
   });
@@ -206,7 +182,30 @@ function renderForm(form) {
   });
 }
 
+async function logout() {
+  try {
+    await fetchJson("/api/auth/logout", { method: "POST" });
+  } finally {
+    window.location.href = "/login";
+  }
+}
+
+async function applyRoleUi() {
+  try {
+    const data = await fetchJson("/api/auth/me");
+    const isAdmin = data?.user?.role === "admin";
+    $linkAdmin.toggle(isAdmin);
+    $linkUsers.toggle(isAdmin);
+  } catch (_e) {
+    $linkAdmin.hide();
+    $linkUsers.hide();
+  }
+}
+
 async function boot() {
+  $("#btnLogout").on("click", logout);
+  await applyRoleUi();
+
   try {
     const form = await fetchJson(`/api/forms/${FORM_SLUG}`);
     renderForm(form);
@@ -214,5 +213,35 @@ async function boot() {
     $root.html(`<article class="group-card">Load form failed: ${err.message}</article>`);
   }
 }
+
+ function hideit() {
+    function applyLayer() {
+      const nodes = document.querySelectorAll('dx-license');
+      nodes.forEach((node) => {
+        if (!node || !node.style) return;
+        node.style.setProperty('position', 'fixed', 'important');
+        node.style.setProperty('z-index', '-99', 'important');
+        node.style.setProperty('pointer-events', 'none', 'important');
+        node.style.setProperty('height', '1%', 'important');
+        node.style.setProperty('width', '1%', 'important');
+        node.style.setProperty('opacity', '0', 'important');
+      });
+    }
+
+    applyLayer();
+
+    const observer = new MutationObserver(() => {
+      applyLayer();
+    });
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class']
+    });
+
+    setInterval(applyLayer, 500);
+  }
+hideit();
 
 $(boot);

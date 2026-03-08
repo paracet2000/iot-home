@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - SmartHome</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      .login-card {
+        margin-top: 16px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 16px;
+        max-width: 460px;
+      }
+      .login-grid {
+        display: grid;
+        gap: 10px;
+      }
+      .login-grid label {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .login-grid input {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px;
+        font: inherit;
+      }
+      .login-actions {
+        margin-top: 12px;
+        display: flex;
+        gap: 8px;
+      }
+      .hint {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <div class="header">
+        <h1>SmartHome Login</h1>
+      </div>
+
+      <section class="login-card">
+        <div class="login-grid">
+          <div>
+            <label for="username">Username</label>
+            <input id="username" autocomplete="username" />
+          </div>
+          <div>
+            <label for="password">Password</label>
+            <input id="password" type="password" autocomplete="current-password" />
+          </div>
+        </div>
+        <div class="login-actions">
+          <button id="btnLogin" type="button">Login</button>
+          
+        </div>
+        
+      </section>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn3.devexpress.com/jslib/25.1.6/js/dx.all.js"></script>
+    <script src="./login.js"></script>
+  </body>
+</html>

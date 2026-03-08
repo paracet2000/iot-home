@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      .nav-links {
+        margin-top: 10px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .nav-links a,
+      .nav-links button {
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        color: #fff;
+        background: transparent;
+        border-radius: 8px;
+        padding: 6px 10px;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .panel {
+        margin-top: 16px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 140px;
+        gap: 10px;
+        align-items: end;
+      }
+      .field {
+        display: grid;
+        gap: 6px;
+      }
+      .field input {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 9px 10px;
+        font: inherit;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+      }
+      th,
+      td {
+        padding: 8px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+      }
+      .delete-btn {
+        border: 1px solid #e2b4b4;
+        background: #fff5f5;
+        color: #9b2f2f;
+        border-radius: 7px;
+        padding: 5px 9px;
+        cursor: pointer;
+      }
+      @media (max-width: 720px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <div class="header">
+        <h1>User Management</h1>
+        <div class="nav-links">
+          <a href="/">Dashboard</a>
+          <a href="/admin">Schema Admin</a>
+          <button id="btnLogout" type="button">Logout</button>
+        </div>
+      </div>
+
+      <section class="panel">
+        <div class="grid">
+          <div class="field">
+            <label for="username">Username</label>
+            <input id="username" />
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input id="password" type="password" />
+          </div>
+          <button id="btnCreate" type="button">Add User</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h3 style="margin: 0">Users</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Created</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="userRows"></tbody>
+        </table>
+      </section>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn3.devexpress.com/jslib/25.1.6/js/dx.all.js"></script>
+    <script src="./users.js"></script>
+  </body>
+</html>

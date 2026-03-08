@@ -40,6 +40,24 @@ body {
   line-height: 1.1;
 }
 
+.nav-links {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.nav-links a,
+.nav-links button {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  color: #fff;
+  background: transparent;
+  border-radius: 8px;
+  padding: 6px 10px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
 #dxform {
   margin-top: 16px;
 }
@@ -98,9 +116,6 @@ body {
 
 .dx-input-host {
   min-width: 160px;
-}
-.dx-license {
-  height: 10px;
 }
 
 @media (max-width: 720px) {

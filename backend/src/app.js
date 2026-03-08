@@ -5,9 +5,14 @@ import { fileURLToPath } from "node:url";
 import healthRoutes from "./routes/health.routes.js";
 import formRoutes from "./routes/form.routes.js";
 import deviceRoutes from "./routes/device.routes.js";
+import authRoutes from "./routes/auth.routes.js";
+import userRoutes from "./routes/user.routes.js";
+import { requireAuth, requireRole } from "./middleware/auth.middleware.js";
 import { errorHandler } from "./middleware/error-handler.js";
 
 export function createApp() {
+
+  
   const app = express();
   const corsOrigin = process.env.CORS_ORIGIN || "*";
   const __filename = fileURLToPath(import.meta.url);
@@ -17,19 +22,45 @@ export function createApp() {
   app.use(cors({ origin: corsOrigin === "*" ? true : corsOrigin }));
   app.use(express.json());
 
-  app.use(express.static(publicDir));
+  app.get("/login", (_req, res) => {
+    res.sendFile(path.join(publicDir, "login.html"));
+  });
 
-  app.get("/", (_req, res) => {
+  app.get("/login.html", (_req, res) => {
+    res.sendFile(path.join(publicDir, "login.html"));
+  });
+
+  app.get("/", requireAuth, (_req, res) => {
     res.sendFile(path.join(publicDir, "index.html"));
   });
 
-  app.get("/admin", (_req, res) => {
+  app.get("/admin", requireAuth, requireRole("admin"), (_req, res) => {
     res.sendFile(path.join(publicDir, "admin.html"));
   });
 
+  app.get("/users", requireAuth, requireRole("admin"), (_req, res) => {
+    res.sendFile(path.join(publicDir, "users.html"));
+  });
+
+  app.get("/index.html", requireAuth, (_req, res) => {
+    res.sendFile(path.join(publicDir, "index.html"));
+  });
+
+  app.get("/admin.html", requireAuth, requireRole("admin"), (_req, res) => {
+    res.sendFile(path.join(publicDir, "admin.html"));
+  });
+
+  app.get("/users.html", requireAuth, requireRole("admin"), (_req, res) => {
+    res.sendFile(path.join(publicDir, "users.html"));
+  });
+
+  app.use(express.static(publicDir, { index: false }));
+
   app.use("/health", healthRoutes);
+  app.use("/api/auth", authRoutes);
   app.use("/api/forms", formRoutes);
   app.use("/api/devices", deviceRoutes);
+  app.use("/api/users", requireAuth, requireRole("admin"), userRoutes);
 
   app.use(errorHandler);
   return app;

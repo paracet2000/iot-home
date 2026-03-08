@@ -16,6 +16,22 @@
     />
     <link rel="stylesheet" href="./styles.css" />
     <style>
+      .nav-links {
+        margin-top: 10px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .nav-links a,
+      .nav-links button {
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        color: #fff;
+        background: transparent;
+        border-radius: 8px;
+        padding: 6px 10px;
+        text-decoration: none;
+        cursor: pointer;
+      }
       .admin-layout {
         margin-top: 16px;
         display: grid;
@@ -121,6 +137,11 @@
     <div class="app-shell">
       <div class="header">
         <h1>Schema Admin</h1>
+        <div class="nav-links">
+          <a href="/">Dashboard</a>
+          <a href="/users">Users</a>
+          <button id="btnLogout" type="button">Logout</button>
+        </div>
       </div>
 
       <div class="admin-layout">
