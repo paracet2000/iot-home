@@ -58,6 +58,11 @@ body {
   cursor: pointer;
 }
 
+.nav-links a.readonly {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
 #dxform {
   margin-top: 16px;
 }
@@ -123,4 +128,153 @@ body {
     font-size: 24px;
   }
 
+}
+
+.schedule-form {
+  margin-top: 10px;
+}
+
+.schedule-card {
+  margin-top: 16px;
+}
+
+.schedule-simple {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.schedule-grid-simple {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.schedule-simple .field label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.schedule-simple input,
+.schedule-simple select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-family: inherit;
+  background: #fff;
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+}
+
+.toolbar button {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  background: #50b24a;
+  color: #fff;
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.schedule-item {
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.time-pill {
+  background: #e7f2ff;
+  color: #1d5fd6;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.device-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: #f0f0f0;
+  color: #333;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.schedule-title {
+  font-weight: 700;
+}
+
+.schedule-title.on {
+  color: #0b7a39;
+}
+
+.schedule-title.off {
+  color: #c0392b;
+}
+
+.schedule-meta {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.schedule-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-edit,
+.btn-delete {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.btn-edit {
+  background: #e8eef8;
+  color: #2f5aa5;
+}
+
+.btn-delete {
+  background: #ff5a5a;
+  color: #fff;
+}
+
+@media (max-width: 720px) {
+  .schedule-grid-simple {
+    grid-template-columns: 1fr;
+  }
+
+  .schedule-item {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .schedule-actions {
+    justify-content: flex-end;
+  }
 }

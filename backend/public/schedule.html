@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scheduler</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <div class="header">
+        <h1>ตั้งเวลาอัตโนมัติ</h1>
+        <div class="nav-links">
+          <a href="/">กลับหน้าควบคุม</a>
+          <a href="/admin">Schema Admin</a>
+          <a href="/users">Users</a>
+          <button id="btnLogout" type="button">Logout</button>
+        </div>
+      </div>
+
+      <section class="group-card schedule-card">
+        <h3 class="group-title">เพิ่มเวลา</h3>
+        <form id="scheduleForm" class="schedule-simple">
+          <input type="hidden" id="scheduleId" />
+          <div class="schedule-grid-simple">
+            <div class="field">
+              <label>Device</label>
+              <select id="deviceId"></select>
+            </div>
+            <div class="field">
+              <label>Pin</label>
+              <select id="pinNumber">
+                <option value="5">D1 (GPIO5)</option>
+                <option value="4">D2 (GPIO4)</option>
+                <option value="14">D5 (GPIO14)</option>
+                <option value="12">D6 (GPIO12)</option>
+                <option value="13">D7 (GPIO13)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Action</label>
+              <select id="action">
+                <option value="open">สั่งเปิด (ON)</option>
+                <option value="close">สั่งปิด (OFF)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>เวลา</label>
+              <input id="time" type="time" />
+            </div>
+            <div class="field">
+              <label>Duration (นาที)</label>
+              <input id="durationMinutes" type="number" min="0" max="255" placeholder="0" />
+            </div>
+          </div>
+          <div class="toolbar">
+            <button id="btnSave" type="submit">บันทึกเวลา</button>
+            <button id="btnReset" type="button">ล้าง</button>
+          </div>
+          <div class="muted">ระบบจะสร้าง cron แบบรายวันอัตโนมัติ (เช่น 06:30 = `30 6 * * *`).</div>
+        </form>
+      </section>
+
+      <section class="group-card" style="margin-top: 16px;">
+        <h3 class="group-title">ตารางเวลา</h3>
+        <div id="scheduleList" class="schedule-list"></div>
+      </section>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="./schedule.js"></script>
+  </body>
+</html>

@@ -6,6 +6,7 @@ import healthRoutes from "./routes/health.routes.js";
 import formRoutes from "./routes/form.routes.js";
 import deviceRoutes from "./routes/device.routes.js";
 import deviceRegistryRoutes from "./routes/device-registry.routes.js";
+import scheduleRoutes from "./routes/schedule.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import { requireAuth, requireRole } from "./middleware/auth.middleware.js";
@@ -39,6 +40,10 @@ export function createApp() {
     res.sendFile(path.join(publicDir, "admin.html"));
   });
 
+  app.get("/schedules", requireAuth, (_req, res) => {
+    res.sendFile(path.join(publicDir, "schedule.html"));
+  });
+
   app.get("/users", requireAuth, requireRole("admin"), (_req, res) => {
     res.sendFile(path.join(publicDir, "users.html"));
   });
@@ -49,6 +54,10 @@ export function createApp() {
 
   app.get("/admin.html", requireAuth, requireRole("admin"), (_req, res) => {
     res.sendFile(path.join(publicDir, "admin.html"));
+  });
+
+  app.get("/schedule.html", requireAuth, (_req, res) => {
+    res.sendFile(path.join(publicDir, "schedule.html"));
   });
 
   app.get("/users.html", requireAuth, requireRole("admin"), (_req, res) => {
@@ -62,6 +71,7 @@ export function createApp() {
   app.use("/api/forms", formRoutes);
   app.use("/api/devices", deviceRoutes);
   app.use("/api/device-registry", requireAuth, requireRole("admin"), deviceRegistryRoutes);
+  app.use("/api/schedules", requireAuth, scheduleRoutes);
   app.use("/api/users", requireAuth, requireRole("admin"), userRoutes);
 
   app.use(errorHandler);

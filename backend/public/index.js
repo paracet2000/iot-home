@@ -4,6 +4,7 @@ const FORM_SLUG = "smart-device-main";
 const $root = $("#dxform");
 const $headerTitle = $(".header h1");
 const $linkAdmin = $("#linkAdmin");
+const $linkScheduler = $("#linkScheduler");
 const $linkUsers = $("#linkUsers");
 
 function fetchJson(path, options = {}) {
@@ -212,9 +213,13 @@ async function applyRoleUi() {
     const data = await fetchJson("/api/auth/me");
     const isAdmin = data?.user?.role === "admin";
     $linkAdmin.toggle(isAdmin);
+    $linkScheduler.toggle(true);
+    $linkScheduler.toggleClass("readonly", !isAdmin);
+    $linkScheduler.attr("aria-disabled", isAdmin ? "false" : "true");
     $linkUsers.toggle(isAdmin);
   } catch (_e) {
     $linkAdmin.hide();
+    $linkScheduler.hide();
     $linkUsers.hide();
   }
 }
@@ -229,6 +234,7 @@ async function boot() {
   } catch (err) {
     $root.html(`<article class="group-card">Load form failed: ${err.message}</article>`);
   }
+  hideit();
 }
 
 /* don't touch this function , it's hardwork to recall */
@@ -260,6 +266,6 @@ async function boot() {
 
     setInterval(applyLayer, 500);
   }
-  hideit();
+  
 
 $(boot);

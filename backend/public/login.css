@@ -36,3 +36,14 @@
   color: var(--muted);
   font-size: 13px;
 }
+
+#btnLogin {
+  background: #07812d;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  padding: 10px 16px;
+  font: inherit;
+  cursor: pointer;
+  min-width: 100px;
+}
