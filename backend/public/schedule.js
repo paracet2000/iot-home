@@ -1,4 +1,5 @@
 const API_BASE_URL = window.location.origin;
+const FORM_SLUG = "smart-device-main";
 
 const $list = $("#scheduleList");
 const $form = $("#scheduleForm");
@@ -16,14 +17,14 @@ const fields = {
 
 let isAdmin = false;
 let deviceOptions = [];
-
-const PIN_LABEL = {
+const pinLabelMap = {
   5: "D1 (GPIO5)",
   4: "D2 (GPIO4)",
   14: "D5 (GPIO14)",
   12: "D6 (GPIO12)",
   13: "D7 (GPIO13)"
 };
+
 
 function fetchJson(path, options = {}) {
   const method = options.method || "GET";
@@ -54,7 +55,7 @@ function setReadonly(readonly) {
 function resetForm() {
   fields.id.val("");
   fields.deviceId.val(deviceOptions[0]?.deviceCode || "");
-  fields.pinNumber.val("14");
+  fields.pinNumber.val(String(Object.keys(pinLabelMap)[0] || "14"));
   fields.action.val("open");
   fields.time.val("");
   fields.durationMinutes.val("0");
@@ -102,7 +103,7 @@ function fillForm(item) {
 
 function renderScheduleCard(item) {
   const timeText = cronToTime(item.cron) || item.cron || "--:--";
-  const pinLabel = PIN_LABEL[item.pinNumber] || item.pinNumber;
+  const pinLabel = pinLabelMap[item.pinNumber] || item.pinNumber;
   const actionLabel = item.action === "close" ? "ปิดไฟ" : "เปิดไฟ";
   const durationText = Number(item.durationMinutes || 0) > 0 ? `${item.durationMinutes} นาที` : "-";
   const deviceBadge = item.deviceId || "-";
@@ -151,15 +152,52 @@ function renderList(items) {
 }
 
 async function loadDeviceOptions() {
-  if (!isAdmin) return;
   try {
-    const data = await fetchJson("/api/device-registry");
-    deviceOptions = Array.isArray(data?.devices) ? data.devices.filter((d) => d.enabled !== false) : [];
-    const optionsHtml = deviceOptions
-      .map((d) => `<option value="${d.deviceCode}">${d.deviceCode} - ${d.deviceName || ""}</option>`)
-      .join("");
-    fields.deviceId.html(optionsHtml || `<option value="">No devices</option>`);
+    const data = await fetchJson(`/api/forms/${FORM_SLUG}`);
+    const divs = Array.isArray(data?.divs) ? data.divs : [];
+
+    const pinOptions = [];
+    const deviceSet = new Map();
+    const pinMap = { ...pinLabelMap };
+
+    for (const div of divs) {
+      if (!Number.isFinite(div.pinNumber)) continue;
+      const pin = Number(div.pinNumber);
+      if (div.text) {
+        pinMap[pin] = `${pinMap[pin] || "PIN"} - ${div.text}`;
+      }
+      pinOptions.push({
+        pinNumber: pin,
+        label: pinMap[pin] || `PIN ${pin}`
+      });
+      if (div.deviceCode) {
+        deviceSet.set(div.deviceCode, true);
+      }
+    }
+
+    Object.keys(pinLabelMap).forEach((key) => delete pinLabelMap[key]);
+    Object.entries(pinMap).forEach(([key, value]) => {
+      pinLabelMap[Number(key)] = value;
+    });
+    const pinHtml = pinOptions.length
+      ? pinOptions
+          .map((p) => `<option value="${p.pinNumber}">${p.label}</option>`)
+          .join("")
+      : Object.entries(pinLabelMap)
+          .map(([pin, label]) => `<option value="${pin}">${label}</option>`)
+          .join("");
+    fields.pinNumber.html(pinHtml || `<option value="">No pins</option>`);
+
+    deviceOptions = [...deviceSet.keys()].map((code) => ({ deviceCode: code }));
+    const deviceHtml = deviceOptions.length
+      ? deviceOptions.map((d) => `<option value="${d.deviceCode}">${d.deviceCode}</option>`).join("")
+      : `<option value="">No devices</option>`;
+    fields.deviceId.html(deviceHtml);
   } catch (_err) {
+    const fallbackPinHtml = Object.entries(pinLabelMap)
+      .map(([pin, label]) => `<option value="${pin}">${label}</option>`)
+      .join("");
+    fields.pinNumber.html(fallbackPinHtml);
     fields.deviceId.html(`<option value="">(no access)</option>`);
   }
 }
