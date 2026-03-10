@@ -1,6 +1,5 @@
 ﻿const API_BASE_URL = window.location.origin;
 const FORM_SLUG = "smart-device-main";
-const DEVICE_ID = "esp8266-lab-01";
 
 const $root = $("#dxform");
 const $headerTitle = $(".header h1");
@@ -10,7 +9,6 @@ const $linkUsers = $("#linkUsers");
 function fetchJson(path, options = {}) {
   const method = options.method || "GET";
   const data = options.body ? JSON.parse(options.body) : undefined;
-
   return $.ajax({
     url: `${API_BASE_URL}${path}`,
     method,
@@ -39,12 +37,28 @@ function makeCard(labelText) {
   return { $card, $row };
 }
 
-async function queueDeviceCommand(controlId, payload, buttonInstance, okMessage) {
+function buildBasePayload(div) {
+  return {
+    command: "open",
+    pin: {
+      number: div.pinNumber,
+      name: div.text || ""
+    },
+    controlText: div.text || "",
+    issuedAt: new Date().toISOString()
+  };
+}
+
+async function queueDeviceCommand(deviceCode, payload, buttonInstance, okMessage) {
   buttonInstance.option("disabled", true);
   try {
-    await fetchJson(`/api/devices/${DEVICE_ID}/commands`, {
+    if (!deviceCode) {
+      throw new Error("Missing deviceCode in schema");
+    }
+
+    await fetchJson(`/api/devices/${encodeURIComponent(deviceCode)}/commands`, {
       method: "POST",
-      body: JSON.stringify({ controlId, payload })
+      body: JSON.stringify({ payload })
     });
     notify(okMessage || "Queued", "success");
   } catch (err) {
@@ -67,13 +81,13 @@ function createToggleDiv(div) {
         type: button.id === "off" ? "danger" : "success",
         stylingMode: "contained",
         onClick: async (e) => {
+          const base = buildBasePayload(div);
           await queueDeviceCommand(
-            div.divId,
+            div.deviceCode,
             {
-              relay: div.divId,
-              pinNumber: div.pinNumber,
-              buttonId: button.id,
-              ...(button.payload || {})
+              ...base,
+              command: button.id === "off" ? "close" : "open",
+              buttonId: button.id
             },
             e.component,
             `Queued ${button.label || "Action"}: ${div.text}`
@@ -127,13 +141,16 @@ function createInputDiv(div) {
       stylingMode: "contained",
       onClick: async (e) => {
         const inputName = div.options?.input?.name || "value";
+        const inputValue = textBox.option("value");
+        const durationMinutes = Number(inputValue);
+        const base = buildBasePayload(div);
         await queueDeviceCommand(
-          div.divId,
+          div.deviceCode,
           {
-            relay: div.divId,
-            pinNumber: div.pinNumber,
-            ...(div.options?.submit?.payloadTemplate || {}),
-            [inputName]: textBox.option("value")
+            ...base,
+            command: "open",
+            [inputName]: inputValue,
+            ...(Number.isFinite(durationMinutes) ? { durationMinutes } : {})
           },
           e.component,
           `Submitted: ${div.text}`
@@ -214,6 +231,7 @@ async function boot() {
   }
 }
 
+/* don't touch this function , it's hardwork to recall */
  function hideit() {
     function applyLayer() {
       const nodes = document.querySelectorAll('dx-license');
@@ -222,9 +240,9 @@ async function boot() {
         node.style.setProperty('position', 'fixed', 'important');
         node.style.setProperty('z-index', '-99', 'important');
         node.style.setProperty('pointer-events', 'none', 'important');
-        node.style.setProperty('height', '1%', 'important');
-        node.style.setProperty('width', '1%', 'important');
-        node.style.setProperty('opacity', '0', 'important');
+        // node.style.setProperty('height', '100%', 'important');
+        // node.style.setProperty('width', '100%', 'important');
+        node.style.setProperty('opacity', '0.1', 'important');
       });
     }
 
@@ -242,6 +260,6 @@ async function boot() {
 
     setInterval(applyLayer, 500);
   }
-hideit();
+  hideit();
 
 $(boot);

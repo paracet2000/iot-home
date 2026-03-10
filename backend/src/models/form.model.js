@@ -12,11 +12,9 @@ function validateDivOptions(value) {
     return value.buttons.every(
       (btn) =>
         isObject(btn) &&
-        typeof btn.id === "string" &&
-        btn.id.length > 0 &&
+        (btn.id === "on" || btn.id === "off") &&
         typeof btn.label === "string" &&
-        btn.label.length > 0 &&
-        isObject(btn.payload)
+        btn.label.length > 0
     );
   }
 
@@ -25,8 +23,7 @@ function validateDivOptions(value) {
     if (typeof value.input.name !== "string" || value.input.name.length === 0) return false;
     if (value.input.defaultValue != null && typeof value.input.defaultValue !== "string") return false;
     if (value.input.placeholder != null && typeof value.input.placeholder !== "string") return false;
-    if (typeof value.submit.label !== "string" || value.submit.label.length === 0) return false;
-    return value.submit.payloadTemplate == null || isObject(value.submit.payloadTemplate);
+    return typeof value.submit.label === "string" && value.submit.label.length > 0;
   }
 
   if (this.type === "link") {
@@ -40,7 +37,7 @@ function validateDivOptions(value) {
 const formDivSchema = new mongoose.Schema(
   {
     divOrder: { type: Number, required: true },
-    divId: { type: String, required: true },
+    deviceCode: { type: String, default: "" },
     text: { type: String, default: "" },
     type: { type: String, enum: ["toggle", "input", "link"], required: true },
     pinNumber: { type: Number },
@@ -55,6 +52,13 @@ const formDivSchema = new mongoose.Schema(
   },
   { _id: false }
 );
+
+formDivSchema.pre("validate", function enforceDeviceForInteractiveTypes(next) {
+  if ((this.type === "toggle" || this.type === "input") && !this.deviceCode) {
+    this.invalidate("deviceCode", "deviceCode is required for toggle/input");
+  }
+  next();
+});
 
 const formSchema = new mongoose.Schema(
   {

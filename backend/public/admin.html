@@ -15,123 +15,7 @@
       href="https://cdn3.devexpress.com/jslib/25.1.6/css/dx.light.css"
     />
     <link rel="stylesheet" href="./styles.css" />
-    <style>
-      .nav-links {
-        margin-top: 10px;
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-      .nav-links a,
-      .nav-links button {
-        border: 1px solid rgba(255, 255, 255, 0.45);
-        color: #fff;
-        background: transparent;
-        border-radius: 8px;
-        padding: 6px 10px;
-        text-decoration: none;
-        cursor: pointer;
-      }
-      .admin-layout {
-        margin-top: 16px;
-        display: grid;
-        gap: 12px;
-      }
-      .admin-card {
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        padding: 14px;
-      }
-      .admin-grid {
-        display: grid;
-        gap: 10px;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
-      .admin-field {
-        display: grid;
-        gap: 6px;
-      }
-      .admin-field label {
-        font-size: 13px;
-        color: var(--muted);
-      }
-      .admin-field input,
-      .admin-field select,
-      .admin-field textarea {
-        width: 100%;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 8px 10px;
-        font: inherit;
-      }
-      .admin-field textarea {
-        min-height: 110px;
-        max-height: 180px;
-        resize: vertical;
-      }
-      .toolbar {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-      #rows {
-        display: grid;
-        gap: 10px;
-      }
-      .row-head {
-        display: grid;
-        gap: 10px;
-        grid-template-columns: 90px 110px 1fr 100px 130px 220px;
-        align-items: end;
-      }
-      .row-options {
-        margin-top: 10px;
-        display: grid;
-        gap: 10px;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-      .options-toggle {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      .field-toolbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-      }
-      .mini-btn {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: #fff;
-        color: #2f3f50;
-        cursor: pointer;
-        padding: 3px 8px;
-        font-size: 12px;
-      }
-      .row-actions {
-        display: grid;
-        gap: 6px;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      .row-actions button {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: #fff;
-        padding: 7px 8px;
-        cursor: pointer;
-      }
-      .hidden {
-        display: none;
-      }
-      @media (max-width: 900px) {
-        .admin-grid,
-        .row-head,
-        .row-options {
-          grid-template-columns: 1fr;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="./admin.css" />
   </head>
   <body>
     <div class="app-shell">
@@ -164,7 +48,7 @@
               <input id="formDescription" placeholder="Runtime schema" />
             </div>
           </div>
-          <div class="toolbar" style="margin-top: 12px">
+          <div class="toolbar toolbar-top">
             <div id="btnLoad"></div>
             <div id="btnAddRow"></div>
             <div id="btnUpsert"></div>
@@ -172,7 +56,7 @@
         </section>
 
         <section class="admin-card">
-          <h3 style="margin: 0 0 10px">Div Rows</h3>
+          <h3 class="section-title">Div Rows</h3>
           <div id="rows"></div>
         </section>
       </div>

@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import healthRoutes from "./routes/health.routes.js";
 import formRoutes from "./routes/form.routes.js";
 import deviceRoutes from "./routes/device.routes.js";
+import deviceRegistryRoutes from "./routes/device-registry.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import { requireAuth, requireRole } from "./middleware/auth.middleware.js";
@@ -60,6 +61,7 @@ export function createApp() {
   app.use("/api/auth", authRoutes);
   app.use("/api/forms", formRoutes);
   app.use("/api/devices", deviceRoutes);
+  app.use("/api/device-registry", requireAuth, requireRole("admin"), deviceRegistryRoutes);
   app.use("/api/users", requireAuth, requireRole("admin"), userRoutes);
 
   app.use(errorHandler);

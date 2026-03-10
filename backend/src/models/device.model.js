@@ -1,19 +1,12 @@
 import mongoose from "mongoose";
 
-const commandSchema = new mongoose.Schema(
+const durationBytesSchema = new mongoose.Schema(
   {
-    commandId: { type: String, required: true },
-    controlId: { type: String, required: true },
-    payload: { type: mongoose.Schema.Types.Mixed, default: {} },
-    status: {
-      type: String,
-      enum: ["queued", "delivered", "acked", "failed"],
-      default: "queued"
-    },
-    createdAt: { type: Date, default: Date.now },
-    deliveredAt: { type: Date, default: null },
-    ackedAt: { type: Date, default: null },
-    result: { type: String, default: "" }
+    byte1: { type: Number, min: 0, max: 255, default: 0 }, // D1
+    byte2: { type: Number, min: 0, max: 255, default: 0 }, // D2
+    byte3: { type: Number, min: 0, max: 255, default: 0 }, // D5
+    byte4: { type: Number, min: 0, max: 255, default: 0 }, // D6
+    byte5: { type: Number, min: 0, max: 255, default: 0 } // D7
   },
   { _id: false }
 );
@@ -21,11 +14,20 @@ const commandSchema = new mongoose.Schema(
 const deviceSchema = new mongoose.Schema(
   {
     deviceId: { type: String, required: true, unique: true, index: true },
-    state: { type: mongoose.Schema.Types.Mixed, default: {} },
-    pendingCommands: { type: [commandSchema], default: [] },
-    lastSeenAt: { type: Date, default: null }
+    pinState: { type: Number, default: 0, min: 0, max: 31 }, // byte0
+    durationBytes: { type: durationBytesSchema, default: () => ({}) },
+    createdBy: {
+      userId: { type: String, default: "" },
+      username: { type: String, default: "" }
+    },
+    updatedBy: {
+      userId: { type: String, default: "" },
+      username: { type: String, default: "" }
+    },
+    createdAt: { type: Date, default: Date.now },
+    lastUpdate: { type: Date, default: Date.now }
   },
-  { timestamps: true }
+  { timestamps: false }
 );
 
 export const Device = mongoose.model("Device", deviceSchema);

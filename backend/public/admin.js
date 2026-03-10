@@ -4,6 +4,7 @@ const $formTitle = $("#formTitle");
 const $formDescription = $("#formDescription");
 const $rows = $("#rows");
 const ORDER_START = 10001;
+let DEVICE_OPTIONS = [];
 
 function notify(message, type = "success") {
   DevExpress.ui.notify({ message, type, displayTime: 2200, width: "auto" });
@@ -26,29 +27,6 @@ function getSlug() {
   return ($formSlug.val() || "").toString().trim();
 }
 
-function parseJsonOrEmpty(text, label) {
-  const raw = (text || "").trim();
-  if (!raw) return {};
-  try {
-    const value = JSON.parse(raw);
-    if (!value || typeof value !== "object" || Array.isArray(value)) {
-      throw new Error("must be object");
-    }
-    return value;
-  } catch (_e) {
-    throw new Error(`${label} JSON is invalid`);
-  }
-}
-
-function formatJsonTextarea($textarea) {
-  try {
-    const parsed = parseJsonOrEmpty($textarea.val(), "JSON");
-    $textarea.val(JSON.stringify(parsed, null, 2));
-  } catch (_e) {
-    notify("Invalid JSON", "error");
-  }
-}
-
 function createField(label, cls, element = "input", attrs = "") {
   return `
     <div class="admin-field">
@@ -58,16 +36,60 @@ function createField(label, cls, element = "input", attrs = "") {
   `;
 }
 
-function createJsonField(label, cls) {
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll("\"", "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function buildDeviceOptionsHtml(selectedValue = "") {
+  const selected = String(selectedValue || "");
+  const baseOption = `<option value="">Select device</option>`;
+  const options = DEVICE_OPTIONS.map((d) => {
+    const code = String(d.deviceCode || "");
+    const name = String(d.deviceName || "");
+    const isSelected = code === selected ? "selected" : "";
+    return `<option value="${escapeHtml(code)}" ${isSelected}>${escapeHtml(code)} - ${escapeHtml(name)}</option>`;
+  }).join("");
+  return baseOption + options;
+}
+
+function createDeviceCodeField(selectedValue = "") {
   return `
     <div class="admin-field">
-      <div class="field-toolbar">
-        <label>${label}</label>
-        <button class="mini-btn format-json" data-target="${cls}" type="button">Format</button>
-      </div>
-      <textarea class="${cls}"></textarea>
+      <label>deviceCode</label>
+      <select class="device-code">
+        ${buildDeviceOptionsHtml(selectedValue)}
+      </select>
     </div>
   `;
+}
+
+function refreshDeviceCodeSelects() {
+  $rows.find(".device-code").each((_idx, el) => {
+    const $el = $(el);
+    const current = ($el.val() || "").toString();
+    $el.html(buildDeviceOptionsHtml(current));
+    if (current) $el.val(current);
+  });
+}
+
+async function loadDeviceOptions() {
+  try {
+    const data = await $.ajax({
+      url: `${getApiBaseUrl()}/api/device-registry`,
+      method: "GET",
+      dataType: "json"
+    });
+    DEVICE_OPTIONS = Array.isArray(data?.devices) ? data.devices.filter((d) => d.enabled !== false) : [];
+    refreshDeviceCodeSelects();
+  } catch (xhr) {
+    const msg = handleHttpError(xhr, "Load devices failed");
+    notify(msg, "warning");
+  }
 }
 
 function renumberOrders(start = ORDER_START) {
@@ -88,54 +110,46 @@ function applyTypeVisibility($row) {
 function readRowData($row, rowNo, errors) {
   const type = ($row.find(".div-type").val() || "").toString();
   const divOrder = Number($row.find(".div-order").val());
-  const divId = ($row.find(".div-id").val() || "").toString().trim();
+  const deviceCode = ($row.find(".device-code").val() || "").toString().trim();
   const text = ($row.find(".div-text").val() || "").toString().trim();
   const pinText = ($row.find(".div-pin").val() || "").toString().trim();
   const pinNumber = pinText ? Number(pinText) : undefined;
 
   if (!Number.isFinite(divOrder)) errors.push(`Row ${rowNo}: divOrder is required`);
-  if (!divId) errors.push(`Row ${rowNo}: divId is required`);
+  if ((type === "toggle" || type === "input") && !deviceCode) {
+    errors.push(`Row ${rowNo}: deviceCode is required for ${type}`);
+  }
   if (!type) errors.push(`Row ${rowNo}: type is required`);
 
   let options = {};
-  try {
-    if (type === "toggle") {
-      const onLabel = ($row.find(".toggle-on-label").val() || "On").toString().trim();
-      const offLabel = ($row.find(".toggle-off-label").val() || "Off").toString().trim();
-      const onPayload = parseJsonOrEmpty($row.find(".toggle-on-payload").val(), `Row ${rowNo} On payload`);
-      const offPayload = parseJsonOrEmpty($row.find(".toggle-off-payload").val(), `Row ${rowNo} Off payload`);
-      options = {
-        buttons: [
-          { id: "on", label: onLabel, payload: onPayload },
-          { id: "off", label: offLabel, payload: offPayload }
-        ]
-      };
-    } else if (type === "input") {
-      const name = ($row.find(".input-name").val() || "").toString().trim();
-      const defaultValue = ($row.find(".input-default").val() || "").toString();
-      const placeholder = ($row.find(".input-placeholder").val() || "").toString();
-      const submitLabel = ($row.find(".input-submit-label").val() || "Submit").toString().trim();
-      const payloadTemplate = parseJsonOrEmpty(
-        $row.find(".input-submit-payload").val(),
-        `Row ${rowNo} payloadTemplate`
-      );
-      options = {
-        input: { name: name || "value", defaultValue, placeholder },
-        submit: { label: submitLabel, payloadTemplate }
-      };
-    } else if (type === "link") {
-      const url = ($row.find(".link-url").val() || "").toString().trim();
-      const buttonLabel = ($row.find(".link-label").val() || "Open").toString().trim();
-      if (!url) errors.push(`Row ${rowNo}: URL is required for link`);
-      options = { url, buttonLabel };
-    }
-  } catch (err) {
-    errors.push(err.message);
+  if (type === "toggle") {
+    const onLabel = ($row.find(".toggle-on-label").val() || "On").toString().trim();
+    const offLabel = ($row.find(".toggle-off-label").val() || "Off").toString().trim();
+    options = {
+      buttons: [
+        { id: "on", label: onLabel },
+        { id: "off", label: offLabel }
+      ]
+    };
+  } else if (type === "input") {
+    const name = ($row.find(".input-name").val() || "").toString().trim();
+    const defaultValue = ($row.find(".input-default").val() || "").toString();
+    const placeholder = ($row.find(".input-placeholder").val() || "").toString();
+    const submitLabel = ($row.find(".input-submit-label").val() || "Submit").toString().trim();
+    options = {
+      input: { name: name || "value", defaultValue, placeholder },
+      submit: { label: submitLabel }
+    };
+  } else if (type === "link") {
+    const url = ($row.find(".link-url").val() || "").toString().trim();
+    const buttonLabel = ($row.find(".link-label").val() || "Open").toString().trim();
+    if (!url) errors.push(`Row ${rowNo}: URL is required for link`);
+    options = { url, buttonLabel };
   }
 
   return {
     divOrder,
-    divId,
+    deviceCode,
     text,
     type,
     ...(Number.isFinite(pinNumber) ? { pinNumber } : {}),
@@ -145,7 +159,7 @@ function readRowData($row, rowNo, errors) {
 
 function makeRow(data = {}) {
   const order = data.divOrder ?? "";
-  const divId = data.divId ?? "";
+  const deviceCode = data.deviceCode ?? "";
   const text = data.text ?? "";
   const pinNumber = data.pinNumber ?? "";
   const type = data.type || "toggle";
@@ -158,7 +172,7 @@ function makeRow(data = {}) {
     <article class="admin-card schema-row">
       <div class="row-head">
         ${createField("divOrder", "div-order", "input", `type="number" value="${order}"`)}
-        ${createField("divId", "div-id", "input", `value="${divId}"`)}
+        ${createDeviceCodeField(deviceCode)}
         ${createField("text", "div-text", "input", `value="${text}"`)}
         ${createField("pinNumber", "div-pin", "input", `type="number" value="${pinNumber}"`)}
         <div class="admin-field">
@@ -183,8 +197,6 @@ function makeRow(data = {}) {
       <div class="row-options options-toggle">
         ${createField("On Label", "toggle-on-label", "input", `value="${onBtn?.label || "On"}"`)}
         ${createField("Off Label", "toggle-off-label", "input", `value="${offBtn?.label || "Off"}"`)}
-        ${createJsonField("On Payload JSON", "toggle-on-payload")}
-        ${createJsonField("Off Payload JSON", "toggle-off-payload")}
       </div>
 
       <div class="row-options options-input">
@@ -192,7 +204,6 @@ function makeRow(data = {}) {
         ${createField("Default Value", "input-default", "input", `value="${options.input?.defaultValue || ""}"`)}
         ${createField("Placeholder", "input-placeholder", "input", `value="${options.input?.placeholder || ""}"`)}
         ${createField("Submit Label", "input-submit-label", "input", `value="${options.submit?.label || "Submit"}"`)}
-        ${createJsonField("Submit PayloadTemplate JSON", "input-submit-payload")}
       </div>
 
       <div class="row-options options-link">
@@ -201,10 +212,6 @@ function makeRow(data = {}) {
       </div>
     </article>
   `);
-
-  $row.find(".toggle-on-payload").val(JSON.stringify(onBtn?.payload || { state: "on" }, null, 2));
-  $row.find(".toggle-off-payload").val(JSON.stringify(offBtn?.payload || { state: "off" }, null, 2));
-  $row.find(".input-submit-payload").val(JSON.stringify(options.submit?.payloadTemplate || {}, null, 2));
 
   $row.on("change", ".div-type", () => applyTypeVisibility($row));
   $row.on("click", ".remove-row", () => {
@@ -220,11 +227,7 @@ function makeRow(data = {}) {
       return;
     }
 
-    const $copy = makeRow({
-      ...rowData,
-      divId: rowData.divId ? `${rowData.divId}-copy` : "",
-      divOrder: ""
-    });
+    const $copy = makeRow({ ...rowData, divOrder: "" });
     $row.after($copy);
     renumberOrders();
   });
@@ -243,11 +246,6 @@ function makeRow(data = {}) {
       $row.insertAfter($next);
       renumberOrders();
     }
-  });
-
-  $row.on("click", ".format-json", (e) => {
-    const cls = $(e.currentTarget).data("target");
-    formatJsonTextarea($row.find(`.${cls}`));
   });
 
   applyTypeVisibility($row);
@@ -347,7 +345,9 @@ async function logout() {
   }
 }
 
-function boot() {
+async function boot() {
+  await loadDeviceOptions();
+
   $("#btnLoad").dxButton({
     text: "Load by Slug",
     type: "normal",
@@ -375,35 +375,5 @@ function boot() {
   $("#btnLogout").on("click", logout);
   $rows.append(makeRow({ divOrder: ORDER_START }));
 }
-
- function hideit() {
-    function applyLayer() {
-      const nodes = document.querySelectorAll('dx-license');
-      nodes.forEach((node) => {
-        if (!node || !node.style) return;
-        node.style.setProperty('position', 'fixed', 'important');
-        node.style.setProperty('z-index', '-99', 'important');
-        node.style.setProperty('pointer-events', 'none', 'important');
-        node.style.setProperty('height', '1%', 'important');
-        node.style.setProperty('width', '1%', 'important');
-        node.style.setProperty('opacity', '0', 'important');
-      });
-    }
-
-    applyLayer();
-
-    const observer = new MutationObserver(() => {
-      applyLayer();
-    });
-    observer.observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['style', 'class']
-    });
-
-    setInterval(applyLayer, 500);
-  }
-hideit();
 
 $(boot);

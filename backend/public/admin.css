@@ -1,0 +1,130 @@
+.admin-layout {
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.admin-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.admin-card.schema-row {
+  background: #fff8e6;
+  border-color: #ead9a1;
+  margin-bottom: 26px;
+}
+
+.admin-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admin-field {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-field label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.admin-field input,
+.admin-field select,
+.admin-field textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+}
+
+.admin-field textarea {
+  min-height: 110px;
+  max-height: 180px;
+  resize: vertical;
+}
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.toolbar-top {
+  margin-top: 12px;
+}
+
+#rows {
+  display: grid;
+  gap: 10px;
+}
+
+.row-head {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 90px 150px 1fr 100px 130px 220px;
+  align-items: end;
+}
+
+.row-options {
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.options-toggle {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mini-btn {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: #2f3f50;
+  cursor: pointer;
+  padding: 3px 8px;
+  font-size: 12px;
+}
+
+.row-actions {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.row-actions button {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 7px 8px;
+  cursor: pointer;
+}
+
+.section-title {
+  margin: 0 0 10px;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .admin-grid,
+  .row-head,
+  .row-options {
+    grid-template-columns: 1fr;
+  }
+}

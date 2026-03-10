@@ -1,6 +1,7 @@
 ﻿import "dotenv/config";
 import { connectDb } from "./db.js";
 import { Form } from "./models/form.model.js";
+import { DeviceRegistry } from "./models/device-registry.model.js";
 
 const slug = "smart-device-main";
 
@@ -11,20 +12,19 @@ const defaultForm = {
   divs: [
     {
       divOrder: 10001,
-      divId: "0001",
+      deviceCode: "esp8266-01",
       text: "Kitchen Light",
       type: "toggle",
       pinNumber: 12,
       options: {
         buttons: [
-          { id: "on", label: "On", payload: { state: "on" } },
-          { id: "off", label: "Off", payload: { state: "off" } }
+          { id: "on", label: "On" },
+          { id: "off", label: "Off" }
         ]
       }
     },
     {
       divOrder: 10002,
-      divId: "0002",
       text: "Go to Camera",
       type: "link",
       options: {
@@ -34,7 +34,7 @@ const defaultForm = {
     },
     {
       divOrder: 10003,
-      divId: "0003",
+      deviceCode: "esp8266-01",
       text: "Watering Time (sec)",
       type: "input",
       pinNumber: 5,
@@ -45,8 +45,7 @@ const defaultForm = {
           placeholder: "Enter seconds"
         },
         submit: {
-          label: "Submit",
-          payloadTemplate: { action: "water" }
+          label: "Submit"
         }
       }
     }
@@ -55,6 +54,29 @@ const defaultForm = {
 
 async function seed() {
   await connectDb(process.env.MONGODB_URI);
+
+  await DeviceRegistry.findOneAndUpdate(
+    { deviceCode: "esp8266-01" },
+    {
+      deviceCode: "esp8266-01",
+      deviceName: "Lighting control device",
+      location: "",
+      enabled: true
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true }
+  );
+
+  await DeviceRegistry.findOneAndUpdate(
+    { deviceCode: "esp8266-02" },
+    {
+      deviceCode: "esp8266-02",
+      deviceName: "Air control device",
+      location: "",
+      enabled: true
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true }
+  );
+
   await Form.findOneAndUpdate({ slug }, defaultForm, {
     upsert: true,
     new: true,
