@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login - AirControl</title>
+    <link rel="stylesheet" href="login.css" />
+  </head>
+  <body>
+    <main class="login-card">
+      <h1>AirControl Login</h1>
+      <p class="subtitle">เข้าสู่ระบบเพื่อควบคุมอุปกรณ์</p>
+      <div class="form">
+        <label>
+          Username
+          <input id="username" type="text" placeholder="admin" />
+        </label>
+        <label>
+          Password
+          <input id="password" type="password" placeholder="••••" />
+        </label>
+        <button id="btnLogin">Login</button>
+        <div class="hint" id="hint"></div>
+      </div>
+      <div class="first-user">
+        <p>ยังไม่มีผู้ใช้? สร้างผู้ใช้คนแรกได้จากปุ่มนี้</p>
+        <button id="btnRegister">Register First User</button>
+      </div>
+    </main>
+    <script src="login.js"></script>
+  </body>
+</html>

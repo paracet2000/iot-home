@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Smart Air + Light Control</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <h1>Smart Air + Light Control</h1>
+        <p class="subtitle">ควบคุมหลอดไฟ และแอร์ผ่านอินเทอร์เน็ต</p>
+      </div>
+      <div class="header-actions">
+        <button id="btnRefresh" class="btn ghost">Refresh</button>
+        <button id="btnLogout" class="btn danger">Logout</button>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="card">
+        <h2>ระบบไฟฟ้าแสงสว่าง</h2>
+        <div class="lights-grid">
+          <div class="light-row" data-channel="1">
+            <span>Light 1</span>
+            <div class="button-group">
+              <button class="btn success" data-action="on">On</button>
+              <button class="btn" data-action="off">Off</button>
+            </div>
+            <span class="state-pill" data-state>Off</span>
+          </div>
+          <div class="light-row" data-channel="2">
+            <span>Light 2</span>
+            <div class="button-group">
+              <button class="btn success" data-action="on">On</button>
+              <button class="btn" data-action="off">Off</button>
+            </div>
+            <span class="state-pill" data-state>Off</span>
+          </div>
+          <div class="light-row" data-channel="3">
+            <span>Light 3</span>
+            <div class="button-group">
+              <button class="btn success" data-action="on">On</button>
+              <button class="btn" data-action="off">Off</button>
+            </div>
+            <span class="state-pill" data-state>Off</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>ระบบแอร์</h2>
+        <div class="air-config">
+          <label>
+            Total duration (นาที)
+            <input id="airTotal" type="number" min="1" max="240" />
+          </label>
+          <button id="btnSaveTotal" class="btn">Save</button>
+          <span class="hint" id="airTotalHint"></span>
+        </div>
+        <div class="air-slider">
+          <div class="air-value">
+            <span>On นาทีในรอบ</span>
+            <strong id="airOnDisplay">0</strong>
+            <span>/</span>
+            <span id="airTotalDisplay">10</span>
+            <span>นาที</span>
+          </div>
+          <input id="airOnRange" type="range" min="0" max="10" step="1" />
+        </div>
+        <div class="air-actions">
+          <button id="btnAirOff" class="btn danger">ปิด (0 นาที)</button>
+          <button id="btnAirFull" class="btn success">เปิดเต็มรอบ</button>
+        </div>
+      </section>
+
+      <section class="card info">
+        <h2>สถานะล่าสุด</h2>
+        <div class="status-grid">
+          <div>
+            <span class="label">Updated at</span>
+            <span id="statusUpdated">-</span>
+          </div>
+          <div>
+            <span class="label">Updated by</span>
+            <span id="statusBy">-</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="index.js"></script>
+  </body>
+</html>

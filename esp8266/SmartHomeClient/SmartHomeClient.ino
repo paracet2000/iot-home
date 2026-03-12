@@ -109,45 +109,49 @@ String htmlEscape(const String& input) {
   return out;
 }
 
-String renderConfigPage(const String& message) {
-  String html;
-  html.reserve(4200);
-  html += "<!doctype html><html><head><meta charset='utf-8'>";
-  html += "<meta name='viewport' content='width=device-width,initial-scale=1'>";
-  html += "<title>Config</title>";
-  html += "<style>";
-  html += "body{font-family:Arial,sans-serif;background:#eef4f4;margin:0;padding:18px;}";
-  html += ".card{max-width:720px;margin:0 auto;background:#fff;border-radius:14px;padding:18px;";
-  html += "box-shadow:0 8px 24px rgba(0,0,0,.08);} h1{margin:0 0 10px;color:#0d5f57;}";
-  html += "label{display:block;margin:10px 0 6px;color:#2a2a2a;}";
-  html += "input{width:100%;padding:10px;border:1px solid #bbb;border-radius:8px;box-sizing:border-box;}";
-  html += ".btn{margin-top:12px;border:none;border-radius:8px;padding:10px 14px;cursor:pointer;";
-  html += "font-weight:700;color:#fff;background:#0a9f6f;} .meta{color:#666;font-size:13px;}";
-  html += ".msg{color:#0d5f57;font-weight:700;}";
-  html += "</style></head><body><div class='card'>";
-  html += "<h1>Device Config</h1>";
+const char CONFIG_PAGE_TEMPLATE[] PROGMEM =
+  "<!doctype html><html><head><meta charset='utf-8'>"
+  "<meta name='viewport' content='width=device-width,initial-scale=1'>"
+  "<title>Config</title>"
+  "<style>"
+  "body{font-family:Arial,sans-serif;background:#eef4f4;margin:0;padding:18px;}"
+  ".card{max-width:720px;margin:0 auto;background:#fff;border-radius:14px;padding:18px;"
+  "box-shadow:0 8px 24px rgba(0,0,0,.08);} h1{margin:0 0 10px;color:#0d5f57;}"
+  "label{display:block;margin:10px 0 6px;color:#2a2a2a;}"
+  "input{width:100%;padding:10px;border:1px solid #bbb;border-radius:8px;box-sizing:border-box;}"
+  ".btn{margin-top:12px;border:none;border-radius:8px;padding:10px 14px;cursor:pointer;"
+  "font-weight:700;color:#fff;background:#0a9f6f;} .meta{color:#666;font-size:13px;}"
+  ".msg{color:#0d5f57;font-weight:700;}"
+  "</style></head><body><div class='card'>"
+  "<h1>Device Config</h1>"
+  "{{MSG_BLOCK}}"
+  "<form method='post' action='/config'>"
+  "<label>WiFi SSID</label><input name='wifiSsid' value='{{WIFI_SSID}}'>"
+  "<label>WiFi Password</label><input name='wifiPass' value='{{WIFI_PASS}}'>"
+  "<label>OTA Hostname</label><input name='otaHostname' value='{{OTA_HOST}}'>"
+  "<label>OTA Password</label><input name='otaPassword' value='{{OTA_PASS}}'>"
+  "<label>AP Password</label><input name='apPassword' value='{{AP_PASS}}'>"
+  "<label>Device ID</label><input name='deviceId' value='{{DEVICE_ID}}'>"
+  "<label>API Base URL</label><input name='apiBaseUrl' value='{{API_BASE}}'>"
+  "<button class='btn' type='submit'>Save</button>"
+  "</form>"
+  "<p class='meta'>Reboot after save to apply WiFi/OTA changes.</p>"
+  "</div></body></html>";
+
+String renderConfigPageTemplate(const String& message) {
+  String html = FPSTR(CONFIG_PAGE_TEMPLATE);
+  String msgBlock = "";
   if (message.length() > 0) {
-    html += "<p class='msg'>" + htmlEscape(message) + "</p>";
+    msgBlock = "<p class='msg'>" + htmlEscape(message) + "</p>";
   }
-  html += "<form method='post' action='/config'>";
-  html += "<label>WiFi SSID</label>";
-  html += "<input name='wifiSsid' value='" + htmlEscape(config.wifiSsid) + "'>";
-  html += "<label>WiFi Password</label>";
-  html += "<input name='wifiPass' value='" + htmlEscape(config.wifiPass) + "'>";
-  html += "<label>OTA Hostname</label>";
-  html += "<input name='otaHostname' value='" + htmlEscape(config.otaHostname) + "'>";
-  html += "<label>OTA Password</label>";
-  html += "<input name='otaPassword' value='" + htmlEscape(config.otaPassword) + "'>";
-  html += "<label>AP Password</label>";
-  html += "<input name='apPassword' value='" + htmlEscape(config.apPassword) + "'>";
-  html += "<label>Device ID</label>";
-  html += "<input name='deviceId' value='" + htmlEscape(config.deviceId) + "'>";
-  html += "<label>API Base URL</label>";
-  html += "<input name='apiBaseUrl' value='" + htmlEscape(config.apiBaseUrl) + "'>";
-  html += "<button class='btn' type='submit'>Save</button>";
-  html += "</form>";
-  html += "<p class='meta'>Reboot after save to apply WiFi/OTA changes.</p>";
-  html += "</div></body></html>";
+  html.replace("{{MSG_BLOCK}}", msgBlock);
+  html.replace("{{WIFI_SSID}}", htmlEscape(config.wifiSsid));
+  html.replace("{{WIFI_PASS}}", htmlEscape(config.wifiPass));
+  html.replace("{{OTA_HOST}}", htmlEscape(config.otaHostname));
+  html.replace("{{OTA_PASS}}", htmlEscape(config.otaPassword));
+  html.replace("{{AP_PASS}}", htmlEscape(config.apPassword));
+  html.replace("{{DEVICE_ID}}", htmlEscape(config.deviceId));
+  html.replace("{{API_BASE}}", htmlEscape(config.apiBaseUrl));
   return html;
 }
 
@@ -336,56 +340,96 @@ bool pollTimerCallback(void*) {
   return false;
 }
 
-String renderPage() {
-  String html;
-  html.reserve(2600);
-  html += "<!doctype html><html><head><meta charset='utf-8'>";
-  html += "<meta name='viewport' content='width=device-width,initial-scale=1'>";
-  html += "<title>CLASSIC HOUSE CONTROL</title>";
-  html += "<style>";
-  html += "body{font-family:Arial,sans-serif;background:#eef4f4;margin:0;padding:18px;}";
-  html += ".card{max-width:720px;margin:0 auto;background:#fff;border-radius:14px;padding:18px;";
-  html += "box-shadow:0 8px 24px rgba(0,0,0,.08);} ";
-  html += ".grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}";
-  html += "button{border:none;border-radius:7px;padding:7px 7px;font-weight:700;cursor:pointer;width:200px;}";
-  html += ".btn-on{background:#0a9f6f;color:#fff;}.btn-off{background:#e0e0e0;}";
-  html += ".btn-warn{background:#ffb74d;color:#1b1b1b;}";
-  html += ".meta{color:#666;font-size:13px;}";
-  html += "@media(max-width:720px){.grid{grid-template-columns:1fr;}}";
-  html += "</style></head><body>";
-  html += "<div class='card'>";
-  html += "<h2>CLASSIC HOUSE CONTROL</h2>";
-  html += "<p>Config: <a href='/config'>/config</a></p>";
-  html += "<h3>Local Control (WiFi)</h3>";
-  html += "<div class='grid'>";
-  html += "<form method='post' action='/local/toggle'><input type='hidden' name='pin' value='12'>";
-  html += "<button class='btn-on' type='submit'>ปิด/เปิด ไฟห้องกินข้าว (D6)</button></form>";
-  html += "<form method='post' action='/local/toggle'><input type='hidden' name='pin' value='14'>";
-  html += "<button class='btn-on' type='submit'>ปิด/เปิด ไฟห้องครัว (D5)</button></form>";
-  html += "<form method='post' action='/local/toggle'><input type='hidden' name='pin' value='13'>";
-  html += "<button class='btn-on' type='submit'>ปิด/เปิด ไฟห้องน้ำ (D7)</button></form>";
-  html += "<form method='post' action='/local/kettle'>";
-  html += "<button class='btn-warn' type='submit'>เปิดกาต้มน้ำ 2.30 นาที (D2)</button></form>";
-  html += "</div>";
-  html += "<h3>Runtime</h3>";
-  html += "<p><strong>Device ID:</strong> ";
-  html += htmlEscape(config.deviceId);
-  html += "</p>";
-  html += "<p><strong>API Base URL:</strong> ";
-  html += htmlEscape(config.apiBaseUrl);
-  html += "</p>";
-  html += "<p><strong>Polling URL:</strong> ";
-  html += htmlEscape(buildApiUrl(String("/api/devices/") + config.deviceId + "/state/raw"));
-  html += "</p>";
-  html += "<p><strong>Expire URL (example):</strong> ";
-  html += htmlEscape(buildApiUrl(String("/api/devices/") + config.deviceId + "/pins/4/expire"));
-  html += "</p>";
-  html += "</div></body></html>";
+const char ROOT_PAGE_TEMPLATE[] PROGMEM =
+  "<!doctype html><html><head><meta charset='utf-8'>"
+  "<meta name='viewport' content='width=device-width,initial-scale=1'>"
+  "<title>CLASSIC HOUSE CONTROL</title>"
+  "<style>"
+  "body{font-family:Arial,sans-serif;background:#eef4f4;margin:0;padding:18px;}"
+  ".card{max-width:720px;margin:0 auto;background:#fff;border-radius:14px;padding:18px;"
+  "box-shadow:0 8px 24px rgba(0,0,0,.08);}"
+  ".rows{display:flex;flex-direction:column;gap:10px;}"
+  ".topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;}"
+  ".gear-link{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;"
+  "border-radius:10px;background:#f0f3f5;border:1px solid #d6dde2;text-decoration:none;}"
+  ".gear-link svg{width:18px;height:18px;fill:#0d5f57;}"
+  ".row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}"
+  ".row-label{font-weight:700;color:#1b1b1b;}"
+  ".row-actions{display:flex;gap:8px;flex-wrap:wrap;}"
+  "button{border:none;border-radius:7px;padding:7px 10px;font-weight:700;cursor:pointer;width:110px;}"
+  ".btn-on{background:#0a9f6f;color:#fff;}"
+  ".btn-off{background:#e0e0e0;color:#222;}"
+  ".btn-warn{background:#ffb74d;color:#1b1b1b;}"
+  "button:disabled{opacity:.55;cursor:not-allowed;}"
+  ".meta{color:#666;font-size:13px;}"
+  "@media(max-width:720px){button{width:100%;}.row{align-items:stretch;}}"
+  "</style></head><body><div class='card'>"
+  "<div class='topbar'>"
+  "<h2>CLASSIC HOUSE CONTROL</h2>"
+  "<a class='gear-link' href='/config' aria-label='Config'>"
+  "<svg viewBox='0 0 24 24' role='img' aria-hidden='true'>"
+  "<path d='M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.38 7.38 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.58.23-1.12.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.4.31.6.22l2.39-.96c.5.4 1.05.72 1.63.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.58-.23 1.12-.54 1.63-.94l2.39.96c.23.09.48 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z'/>"
+  "</svg></a></div>"
+  "<h3>Local Control (WiFi)</h3>"
+  "<div class='rows'>"
+  "<div class='row'><div class='row-label'>Dining Light (D6)</div><div class='row-actions'>"
+  "<form method='post' action='/local/toggle'><input type='hidden' name='pin' value='12'><input type='hidden' name='state' value='1'>"
+  "<button class='btn-on' type='submit' {{D6_ON_DISABLED}}>ON</button></form>"
+  "<form method='post' action='/local/toggle'><input type='hidden' name='pin' value='12'><input type='hidden' name='state' value='0'>"
+  "<button class='btn-off' type='submit' {{D6_OFF_DISABLED}}>OFF</button></form>"
+  "</div></div>"
+  "<div class='row'><div class='row-label'>Kitchen Light (D5)</div><div class='row-actions'>"
+  "<form method='post' action='/local/toggle'><input type='hidden' name='pin' value='14'><input type='hidden' name='state' value='1'>"
+  "<button class='btn-on' type='submit' {{D5_ON_DISABLED}}>ON</button></form>"
+  "<form method='post' action='/local/toggle'><input type='hidden' name='pin' value='14'><input type='hidden' name='state' value='0'>"
+  "<button class='btn-off' type='submit' {{D5_OFF_DISABLED}}>OFF</button></form>"
+  "</div></div>"
+  "<div class='row'><div class='row-label'>Bathroom Light (D7)</div><div class='row-actions'>"
+  "<form method='post' action='/local/toggle'><input type='hidden' name='pin' value='13'><input type='hidden' name='state' value='1'>"
+  "<button class='btn-on' type='submit' {{D7_ON_DISABLED}}>ON</button></form>"
+  "<form method='post' action='/local/toggle'><input type='hidden' name='pin' value='13'><input type='hidden' name='state' value='0'>"
+  "<button class='btn-off' type='submit' {{D7_OFF_DISABLED}}>OFF</button></form>"
+  "</div></div>"
+  "<div class='row'><div class='row-label'>Kettle (D2) 2.30 min</div><div class='row-actions'>"
+  "<form method='post' action='/local/kettle'>"
+  "<button class='btn-warn' type='submit' {{D2_ON_DISABLED}}>ON</button></form>"
+  "<form method='post' action='/local/toggle'><input type='hidden' name='pin' value='4'><input type='hidden' name='state' value='0'>"
+  "<button class='btn-off' type='submit' {{D2_OFF_DISABLED}}>OFF</button></form>"
+  "</div></div>"
+  "</div><h3>Runtime</h3>"
+  "<p><strong>Device ID:</strong> {{DEVICE_ID}}</p>"
+  "<p><strong>API Base URL:</strong> {{API_BASE}}</p>"
+  "<p><strong>Polling URL:</strong> {{POLLING_URL}}</p>"
+  "<p><strong>Expire URL (example):</strong> {{EXPIRE_URL}}</p>"
+  "</div></body></html>";
+
+String renderRootPageTemplate() {
+  String html = FPSTR(ROOT_PAGE_TEMPLATE);
+  String d6On = pinOn[3] ? "disabled" : "";
+  String d6Off = pinOn[3] ? "" : "disabled";
+  String d5On = pinOn[2] ? "disabled" : "";
+  String d5Off = pinOn[2] ? "" : "disabled";
+  String d7On = pinOn[4] ? "disabled" : "";
+  String d7Off = pinOn[4] ? "" : "disabled";
+  String d2On = pinOn[1] ? "disabled" : "";
+  String d2Off = pinOn[1] ? "" : "disabled";
+  html.replace("{{D6_ON_DISABLED}}", d6On);
+  html.replace("{{D6_OFF_DISABLED}}", d6Off);
+  html.replace("{{D5_ON_DISABLED}}", d5On);
+  html.replace("{{D5_OFF_DISABLED}}", d5Off);
+  html.replace("{{D7_ON_DISABLED}}", d7On);
+  html.replace("{{D7_OFF_DISABLED}}", d7Off);
+  html.replace("{{D2_ON_DISABLED}}", d2On);
+  html.replace("{{D2_OFF_DISABLED}}", d2Off);
+  html.replace("{{DEVICE_ID}}", htmlEscape(config.deviceId));
+  html.replace("{{API_BASE}}", htmlEscape(config.apiBaseUrl));
+  html.replace("{{POLLING_URL}}", htmlEscape(buildApiUrl(String("/api/devices/") + config.deviceId + "/state/raw")));
+  html.replace("{{EXPIRE_URL}}", htmlEscape(buildApiUrl(String("/api/devices/") + config.deviceId + "/pins/4/expire")));
   return html;
 }
 
 void handleRoot() {
-  server.send(200, "text/html", renderPage());
+  server.send(200, "text/html", renderRootPageTemplate());
 }
 
 void handleLocalToggle() {
@@ -402,6 +446,9 @@ void handleLocalToggle() {
   }
 
   bool nextOn = !pinOn[idx];
+  if (server.hasArg("state")) {
+    nextOn = server.arg("state").toInt() != 0;
+  }
   durationMinutes[idx] = 0;
   timerState[idx] = false;
   timers[idx + 1].cancel();
@@ -425,7 +472,7 @@ void handleLocalKettle() {
 }
 
 void handleConfigGet() {
-  server.send(200, "text/html", renderConfigPage(""));
+  server.send(200, "text/html", renderConfigPageTemplate(""));
 }
 
 void handleConfigPost() {
@@ -437,7 +484,7 @@ void handleConfigPost() {
   if (server.hasArg("deviceId")) strncpy(config.deviceId, server.arg("deviceId").c_str(), sizeof(config.deviceId) - 1);
   if (server.hasArg("apiBaseUrl")) strncpy(config.apiBaseUrl, server.arg("apiBaseUrl").c_str(), sizeof(config.apiBaseUrl) - 1);
   saveConfig();
-  server.send(200, "text/html", renderConfigPage("Saved"));
+  server.send(200, "text/html", renderConfigPageTemplate("Saved"));
 }
 
 void handleNotFound() {
@@ -532,3 +579,6 @@ void loop() {
   for (auto& t : timers) t.tick();
   localTimer.tick();
 }
+
+
+
